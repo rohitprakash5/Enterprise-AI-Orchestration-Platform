@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system deps for pdfplumber/PyMuPDF
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmupdf-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY eio/ ./eio/
+COPY pyproject.toml .
+
+# Pre-create data directories
+RUN mkdir -p eio/data/demo/documents eio/data/chroma eio/data/audit
+
+ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+
+CMD ["uvicorn", "eio.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

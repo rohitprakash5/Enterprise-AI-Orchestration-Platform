@@ -1,0 +1,50 @@
+max_cost_usd_per_request: 0.50
+max_tokens_per_request: 16000
+
+blocked_sql_keywords:
+  - DROP
+  - DELETE
+  - UPDATE
+  - INSERT
+  - TRUNCATE
+  - ALTER
+  - CREATE
+  - GRANT
+  - REVOKE
+  - EXEC
+  - EXECUTE
+
+pii_detection_enabled: true
+pii_patterns:
+  ssn: '\b\d{3}-\d{2}-\d{4}\b'
+  credit_card: '\b(?:\d[ -]?){13,16}\b'
+  email: '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+  phone: '\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'
+
+approved_models:
+  # OpenAI
+  - gpt-4o
+  - gpt-4o-mini
+  - gpt-4-turbo
+  - gpt-3.5-turbo
+  # GPT-OSS (open-weight via HuggingFace)
+  - openai/gpt-oss-20b
+  - gpt-oss-20b
+  # Anthropic
+  - claude-3-5-sonnet
+  - claude-3-haiku
+  # IBM
+  - granite-13b-chat
+  # Google
+  - gemini-1.5-flash
+  # Local / open-source
+  - llama3
+  - mistral
+  # Demo / testing
+  - mock-gpt-demo
+
+audit_log_enabled: true
+audit_log_path: eio/data/audit/audit.log
+
+require_sql_validation: true
+max_sql_result_rows: 1000

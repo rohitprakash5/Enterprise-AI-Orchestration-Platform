@@ -1,0 +1,251 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>EIO Question Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system,"Segoe UI",system-ui,sans-serif; font-size: 13px;
+         line-height: 1.6; background: #fff; color: #1f2328; padding: 28px 20px; }
+  .container { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.35rem; color: #1a365d; margin-bottom: 4px; }
+  .sub { color: #57606a; font-size: 0.82rem; margin-bottom: 24px; }
+  h2 { font-size: 0.92rem; font-weight: 700; color: #fff; padding: 7px 12px;
+       border-radius: 6px; margin: 20px 0 8px; }
+  .db    { background: #276749; }
+  .doc   { background: #2c5282; }
+  .hyb   { background: #553c9a; }
+  .gap   { background: #c05621; }
+  .meta  { background: #2d3748; }
+  ul { list-style: none; padding: 0; margin-bottom: 4px; }
+  li { padding: 5px 10px 5px 32px; position: relative; border-radius: 5px;
+       margin-bottom: 3px; font-size: 0.82rem; cursor: default; }
+  li:before { position: absolute; left: 10px; }
+  .db-q    { background: #f0fff4; border-left: 3px solid #276749; }
+  .db-q:before { content: "🗄️"; }
+  .doc-q   { background: #ebf8ff; border-left: 3px solid #2c5282; }
+  .doc-q:before { content: "📄"; }
+  .hyb-q   { background: #faf5ff; border-left: 3px solid #553c9a; }
+  .hyb-q:before { content: "🔀"; }
+  .gap-q   { background: #fff8f1; border-left: 3px solid #c05621; }
+  .gap-q:before { content: "❌"; }
+  .meta-q  { background: #f7f8fa; border-left: 3px solid #718096; }
+  .meta-q:before { content: "🔍"; }
+  .tag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:0.7rem;
+         font-weight:600; margin-left:6px; vertical-align:middle; }
+  .sql-tag  { background:#c6f6d5; color:#276749; }
+  .rag-tag  { background:#bee3f8; color:#2c5282; }
+  .hyb-tag  { background:#e9d8fd; color:#553c9a; }
+  .no-tag   { background:#fed7d7; color:#9b2c2c; }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; font-size:0.78rem; }
+  .legend-item { display:flex; align-items:center; gap:5px; }
+  .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .note { background:#f7f8fa; border:1px solid #e5e7eb; border-radius:7px;
+          padding:10px 14px; font-size:0.79rem; color:#4a5568; margin-bottom:16px; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px; }
+  .kpi { background:#f7f8fa; border:1px solid #e5e7eb; border-radius:6px;
+         padding:10px 12px; text-align:center; }
+  .kpi .n { font-size:1.4rem; font-weight:700; color:#276749; }
+  .kpi .l { font-size:0.72rem; color:#57606a; }
+  footer { margin-top:32px; padding-top:10px; border-top:1px solid #e5e7eb;
+           text-align:center; font-size:0.72rem; color:#57606a; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>💬 EIO — Complete Question Guide</h1>
+<p class="sub">Every question you can ask, based on the actual data and documents loaded into the platform</p>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="n">~60</div><div class="l">Answerable Questions</div></div>
+  <div class="kpi"><div class="n">4</div><div class="l">DB Tables</div></div>
+  <div class="kpi"><div class="n">6</div><div class="l">Documents</div></div>
+  <div class="kpi"><div class="n">3</div><div class="l">Companies</div></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#276749"></div> Database (SQL)</div>
+  <div class="legend-item"><div class="dot" style="background:#2c5282"></div> Documents (RAG)</div>
+  <div class="legend-item"><div class="dot" style="background:#553c9a"></div> Hybrid (SQL + RAG)</div>
+  <div class="legend-item"><div class="dot" style="background:#2d3748"></div> Metadata</div>
+  <div class="legend-item"><div class="dot" style="background:#c05621"></div> Gap (will recommend connectors)</div>
+</div>
+
+
+
+<h2 class="db">🗄️ Database Questions — Answered with SQL</h2>
+
+<p style="font-size:0.78rem;color:#57606a;margin-bottom:8px">
+  Companies: <b>Apex Analytics Corp</b> · <b>Nova Financial Systems</b> · <b>Crest Manufacturing Ltd</b>  |  Years: 2021, 2022, 2023  |  Quarters: Q1–Q4
+</p>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Revenue &amp; P&amp;L</h2>
+<ul>
+  <li class="db-q">What was the total revenue for all three companies in Q4 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was Apex Analytics revenue in Q1 2022? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show quarterly revenue for Nova Financial Systems across all of 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which quarter had the highest revenue for Crest Manufacturing? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was the total annual revenue for each company in 2022? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which company generated the most revenue in 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show revenue trend for Apex Analytics from 2021 to 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was the combined revenue of all three companies in 2023? <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Product Line Revenue (Apex)</h2>
+<ul>
+  <li class="db-q">What was Apex Analytics Cloud Platform revenue in Q4 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Compare Analytics Suite vs Licensing revenue for Apex in 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which product line contributed the most revenue for Apex Analytics in 2022? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show Professional Services revenue by quarter for Apex Analytics <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was the breakdown of Apex Analytics revenue by product line in 2023? <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Product Line Revenue (Nova &amp; Crest)</h2>
+<ul>
+  <li class="db-q">What was Nova Financial Systems Investment Banking revenue in Q3 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Compare Asset Management vs Retail Banking revenue for Nova Financial in 2022 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show Crest Manufacturing Equipment Sales revenue by year <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was Crest Manufacturing Maintenance Contracts revenue in 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which product line grew fastest for Crest Manufacturing between 2021 and 2023? <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Profitability — EBITDA &amp; Margin</h2>
+<ul>
+  <li class="db-q">What was the EBITDA margin for Apex Analytics in Q4 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which company had the best gross margin in 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show EBITDA for all companies in every quarter of 2022 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Compare gross margins across all three companies in Q4 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">How did Nova Financial gross margin trend from 2021 to 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was the highest EBITDA quarter for any company across all years? <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Year-over-Year Growth</h2>
+<ul>
+  <li class="db-q">Which company had the highest YoY revenue growth in 2022? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was Apex Analytics YoY growth in each quarter of 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show YoY growth for all three companies side by side in 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which quarter saw the strongest YoY growth for Nova Financial? <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Expenses</h2>
+<ul>
+  <li class="db-q">What were Apex Analytics total expenses in Q4 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show R&amp;D spend for Apex Analytics across all quarters in 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Which expense category was highest for Crest Manufacturing in 2022? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was the Sales &amp; Marketing spend as a percentage of revenue for Nova Financial in 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Compare COGS vs R&amp;D expenses for Apex Analytics in 2023 <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">Show total expenses by category for all companies in Q3 2023 <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+<h2 class="db" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Run Rate &amp; Annualised Metrics</h2>
+<ul>
+  <li class="db-q">What is the annualised run rate for Apex Analytics based on Q4 2023? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What is Nova Financial's Q4 2023 revenue run rate? <span class="tag sql-tag">SQL</span></li>
+  <li class="db-q">What was the average quarterly revenue for Crest Manufacturing in 2023? <span class="tag sql-tag">SQL</span></li>
+</ul>
+
+
+
+
+<h2 class="doc">📄 Document Questions — Answered from Loaded Files</h2>
+
+<p style="font-size:0.78rem;color:#57606a;margin-bottom:8px">
+  Files: <b>annual_report_2023.pdf</b> · <b>q4_2023_earnings_release.txt</b> · <b>investment_thesis_2024.txt</b> · <b>risk_management_policy.txt</b> · <b>data_governance_policy.txt</b> · <b>company_overview.txt</b>
+</p>
+
+<h2 class="doc" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Earnings Release (q4_2023_earnings_release.txt)</h2>
+<ul>
+  <li class="doc-q">What did the CEO say about Q4 2023 performance? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What was Apex Analytics ARR as reported in the Q4 2023 earnings release? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What was Apex Analytics net revenue retention rate? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">How many new Fortune 500 customers did Apex add in Q4 2023? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What was the full year 2023 free cash flow for Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+</ul>
+
+<h2 class="doc" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Investment Thesis (investment_thesis_2024.txt)</h2>
+<ul>
+  <li class="doc-q">What is the analyst price target for Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What does the investment thesis say about Apex Analytics competitive advantage? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">Why is Apex Analytics rated as a BUY by Meridian Capital? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What is the LTV:CAC ratio and CAC payback period for Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What revenue CAGR does the analyst forecast through 2026? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What does the report say about Apex Analytics R&amp;D investment? <span class="tag rag-tag">RAG</span></li>
+</ul>
+
+<h2 class="doc" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Risk Management Policy (risk_management_policy.txt)</h2>
+<ul>
+  <li class="doc-q">What are the main risk categories in the enterprise risk management policy? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What is Apex Analytics customer concentration risk? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What is the FX exposure policy for Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What does the policy say about AI regulation risk? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What is Apex Analytics tolerance for financial risk? <span class="tag rag-tag">RAG</span></li>
+</ul>
+
+<h2 class="doc" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Data Governance &amp; AI Policy (data_governance_policy.txt)</h2>
+<ul>
+  <li class="doc-q">What are the data classification levels defined in the governance policy? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What approval process is required for AI models at Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What accuracy threshold must AI models meet before GA release? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">How must Class 4 restricted data be handled? <span class="tag rag-tag">RAG</span></li>
+</ul>
+
+<h2 class="doc" style="font-size:0.78rem;padding:4px 10px;margin:10px 0 6px">Company Overview (company_overview.txt)</h2>
+<ul>
+  <li class="doc-q">Who is the CEO of Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">How many employees does Apex Analytics have? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What are the primary markets Apex Analytics serves? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What is the geographic revenue split for Apex Analytics? <span class="tag rag-tag">RAG</span></li>
+  <li class="doc-q">What does Apex Analytics Cloud Platform ARR look like? <span class="tag rag-tag">RAG</span></li>
+</ul>
+
+
+
+
+<h2 class="hyb">🔀 Hybrid Questions — Database + Documents Combined</h2>
+
+<ul>
+  <li class="hyb-q">What was Apex Analytics Q4 2023 revenue and what does the earnings release say about growth drivers? <span class="tag hyb-tag">SQL+RAG</span></li>
+  <li class="hyb-q">Compare the database revenue figures for Apex Analytics 2023 with what the annual report projects for 2024 <span class="tag hyb-tag">SQL+RAG</span></li>
+  <li class="hyb-q">What is the EBITDA margin in the database vs what the earnings release reports? <span class="tag hyb-tag">SQL+RAG</span></li>
+  <li class="hyb-q">Show Apex Analytics revenue growth trend from the database and explain the competitive strategy from the annual report <span class="tag hyb-tag">SQL+RAG</span></li>
+  <li class="hyb-q">What does the investment thesis say about Apex growth, and does the 2023 database data support it? <span class="tag hyb-tag">SQL+RAG</span></li>
+  <li class="hyb-q">What was the R&amp;D spend from the database, and what does the policy say about model approval? <span class="tag hyb-tag">SQL+RAG</span></li>
+  <li class="hyb-q">Is the Q4 2023 revenue growth from the database consistent with the earnings press release figure? <span class="tag hyb-tag">SQL+RAG</span></li>
+</ul>
+
+
+
+
+<h2 class="meta">🔍 Metadata Questions — Schema Inspection</h2>
+<ul>
+  <li class="meta-q">What tables are in the database? <span class="tag" style="background:#e2e8f0;color:#2d3748">META</span></li>
+  <li class="meta-q">What columns are in the quarterly_results table? <span class="tag" style="background:#e2e8f0;color:#2d3748">META</span></li>
+  <li class="meta-q">What product lines are tracked in the revenue table? <span class="tag" style="background:#e2e8f0;color:#2d3748">META</span></li>
+  <li class="meta-q">What expense categories are available in the database? <span class="tag" style="background:#e2e8f0;color:#2d3748">META</span></li>
+</ul>
+
+
+
+
+<h2 class="gap">❌ Gap Questions — EIO Will Recommend Connectors</h2>
+
+<div class="note" style="margin-bottom:8px">
+  These queries trigger the <b>Intelligent Gap Analysis</b> — EIO says "I can't answer yet" and tells you exactly what connector to add. Great for demonstrating Doc2 intelligence.
+</div>
+
+<ul>
+  <li class="gap-q">How many employees does Apex Analytics have in each department? <span class="tag no-tag">HR data missing</span></li>
+  <li class="gap-q">What is the current sales pipeline value? <span class="tag no-tag">CRM missing</span></li>
+  <li class="gap-q">What is the total payroll cost for 2023? <span class="tag no-tag">HR/payroll missing</span></li>
+  <li class="gap-q">Show the organisational chart for Apex Analytics <span class="tag no-tag">Org directory missing</span></li>
+  <li class="gap-q">What is the inventory level for Cloud Platform SKUs? <span class="tag no-tag">ERP/inventory missing</span></li>
+  <li class="gap-q">How many open IT support tickets are there this month? <span class="tag no-tag">ServiceNow missing</span></li>
+  <li class="gap-q">What is the headcount by region? <span class="tag no-tag">HR connector missing</span></li>
+  <li class="gap-q">What is the customer churn rate this quarter? <span class="tag no-tag">CRM data missing</span></li>
+</ul>
+
+<footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

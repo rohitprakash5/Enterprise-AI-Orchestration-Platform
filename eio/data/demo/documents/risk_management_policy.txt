@@ -1,0 +1,57 @@
+APEX ANALYTICS CORP — ENTERPRISE RISK MANAGEMENT POLICY
+=========================================================
+Document ID: ERM-2024-001 | Effective: January 1, 2024 | Owner: CFO Office
+
+1. PURPOSE AND SCOPE
+--------------------
+This policy establishes the enterprise risk management (ERM) framework for
+Apex Analytics Corp and all subsidiaries. It applies to all business units,
+functional areas, and third-party relationships that could materially affect
+the company's financial position, operations, or reputation.
+
+2. RISK CATEGORIES
+------------------
+
+2.1 Strategic Risk
+    Definition: Risks affecting the company's ability to execute its strategic plan.
+    Key risks: AI regulation, competitive disruption, M&A integration.
+    Tolerance: Low. Board-level oversight required for strategic risk acceptance.
+
+2.2 Financial Risk
+    Definition: Risks affecting revenue, cost structure, or capital position.
+    Key risks: Customer concentration (top 50 customers = 28% of revenue),
+    FX exposure (28% international revenue), liquidity risk.
+    Tolerance: Medium. CFO approval required. Hedging policy in place for FX >$5M.
+
+2.3 Technology and Cybersecurity Risk
+    Definition: Risks from system failures, data breaches, or AI model failures.
+    Key risks: Cloud infrastructure outage, data breach, AI model hallucination.
+    Tolerance: Very Low. Zero tolerance for customer data exposure.
+    Controls: SOC 2 Type II, ISO 27001, annual penetration testing, bug bounty.
+
+2.4 AI Governance Risk
+    Definition: Risks from AI model outputs causing incorrect business decisions.
+    Key risks: Model hallucination in financial analytics, biased model outputs.
+    Controls: Human review required for AI outputs in regulated industries.
+    Policy: All AI-generated financial recommendations require analyst validation.
+
+2.5 Compliance Risk
+    Definition: Risks from non-compliance with laws and regulations.
+    Key risks: GDPR, CCPA, SOX (as customers of financial institutions),
+    EU AI Act, US Executive Order on AI.
+    Tolerance: Zero. Legal team reviews all new product features.
+
+3. RISK GOVERNANCE
+------------------
+Board Risk Committee: Quarterly reviews of top-10 enterprise risks.
+Executive Risk Committee: Monthly reviews. Chaired by CEO.
+Business Unit Risk Owners: Monthly reporting to CRO.
+
+4. KEY RISK INDICATORS
+----------------------
+- Customer churn rate > 5% quarterly: Triggers escalation to Board
+- Cybersecurity incident response time > 4 hours: SLA breach
+- AI model accuracy degradation > 10%: Immediate product halt
+- Revenue concentration (top 10 customers) > 35%: Diversification required
+
+This policy is reviewed annually and updated as the risk landscape evolves.

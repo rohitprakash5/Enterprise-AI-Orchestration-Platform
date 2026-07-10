@@ -1,0 +1,54 @@
+APEX ANALYTICS CORP — DATA GOVERNANCE AND AI POLICY
+====================================================
+Document ID: DG-AI-2024-003 | Version: 2.1 | Owner: Chief Data Officer
+
+1. DATA CLASSIFICATION
+----------------------
+All data processed by Apex Analytics platforms must be classified as follows:
+
+  Class 1 — Public:     Marketing materials, press releases, published reports.
+  Class 2 — Internal:   Operational data, non-sensitive employee records.
+  Class 3 — Confidential: Customer data, financial projections, IP.
+  Class 4 — Restricted: PII, payment data, security credentials, trade secrets.
+
+Class 3 and Class 4 data must be encrypted at rest (AES-256) and in transit (TLS 1.3).
+
+2. AI MODEL GOVERNANCE
+----------------------
+All AI models deployed in Apex Analytics products must comply with:
+
+2.1 Model Approval Process
+    - All new AI models require Security, Legal, and Product review
+    - Financial analytics models require additional accuracy validation
+    - Models must achieve >95% accuracy on benchmark datasets before GA release
+    - Model cards must be published for all production models
+
+2.2 Explainability Requirements
+    - All AI-generated insights must include confidence scores
+    - Reasoning paths must be auditable and logged
+    - Users must be informed when AI-generated content is presented
+    - PII must be detected and redacted before AI model processing
+
+2.3 Prohibited Uses
+    - AI models must not make autonomous financial decisions without human review
+    - AI outputs must not be presented as guaranteed facts
+    - Customer data must not be used to train external AI models without consent
+
+3. DATA RETENTION
+-----------------
+  Financial records:  7 years (SOX requirement)
+  Customer data:      Duration of contract + 2 years
+  AI inference logs:  1 year
+  Audit logs:         5 years (tamper-evident storage required)
+
+4. BREACH NOTIFICATION
+----------------------
+  Customer data breach: Notification within 72 hours (GDPR) / 30 days (CCPA)
+  Financial data breach: Immediate Board notification + SEC disclosure if material
+
+5. EMPLOYEE OBLIGATIONS
+-----------------------
+All employees must complete annual data governance training.
+Violations of this policy may result in disciplinary action up to termination.
+
+Approved by: Dr. Sarah Chen, Board Chairwoman | Jonathan Caldwell, CEO

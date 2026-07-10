@@ -1,0 +1,55 @@
+APEX ANALYTICS CORP — CORPORATE FACT SHEET 2024
+================================================
+
+COMPANY PROFILE
+---------------
+Full Name:     Apex Analytics Corp
+Ticker:        APEX (NASDAQ)
+Founded:       2010, San Francisco, California
+CEO:           Jonathan R. Caldwell
+Employees:     1,240 (as of December 31, 2023)
+Headquarters:  San Francisco, CA (HQ), New York, London, Singapore
+
+BUSINESS DESCRIPTION
+--------------------
+Apex Analytics Corp provides cloud-native enterprise analytics software
+and AI-powered data intelligence platforms to Fortune 2000 companies.
+
+PRIMARY PRODUCTS
+- Cloud Platform:       Multi-tenant SaaS analytics infrastructure ($82M ARR, 2023)
+- Analytics Suite:      Business intelligence and reporting ($54M ARR, 2023)
+- Professional Services: Implementation and consulting ($32M revenue, 2023)
+
+PRIMARY MARKETS
+- Financial Services (42% of revenue): Investment banks, asset managers, insurers
+- Healthcare (16% of revenue): Hospital systems, pharma, payers
+- Manufacturing (10% of revenue): Automotive, aerospace, industrial
+
+GEOGRAPHIC SPLIT (2023)
+- North America: 72% of revenue
+- EMEA:          18% of revenue
+- APAC:           8% of revenue
+- LatAm:          2% of revenue
+
+KEY METRICS (Full Year 2023)
+-----------------------------
+Total Revenue:             $185.4M  (+22% YoY)
+Annual Recurring Revenue:  $164.8M  (+35% YoY)
+EBITDA:                    $70.7M   (38.1% margin)
+Net Income:                $52.8M
+Free Cash Flow:            $61.3M
+Net Revenue Retention:     118%
+Customer Count:            2,847    (+31% YoY)
+Gross Margin:              76% (Cloud); 58% (blended)
+
+CERTIFICATIONS AND COMPLIANCE
+- SOC 2 Type II (annual audit by Deloitte)
+- ISO 27001 certified
+- FedRAMP Moderate authorized
+- GDPR and CCPA compliant
+- Carbon-neutral operations (achieved Q3 2023)
+
+INVESTOR RELATIONS
+Quarterly earnings: February, May, August, November
+Annual meeting: April
+IR contact: investors@apexanalytics.com

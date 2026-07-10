@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  eio-api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: eio-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./eio/data:/app/eio/data
+    env_file:
+      - .env
+    environment:
+      - EIO_API_HOST=0.0.0.0
+      - EIO_API_PORT=8000
+      - EIO_SQLITE_PATH=eio/data/demo/financial.db
+      - EIO_LOCAL_STORAGE_PATH=eio/data/demo/documents
+      - EIO_CHROMA_PATH=eio/data/chroma
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  eio-ui:
+    build:
+      context: .
+      dockerfile: docker/ui/Dockerfile
+    container_name: eio-ui
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - EIO_API_URL=http://eio-api:8000
+    depends_on:
+      eio-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  default:
+    name: eio-network

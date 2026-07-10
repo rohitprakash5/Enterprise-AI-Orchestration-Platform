@@ -1,0 +1,57 @@
+APEX ANALYTICS CORP — INVESTMENT THESIS AND PRICE TARGET
+=========================================================
+Meridian Capital Research | Published: March 2024 | Rating: BUY | Target: $142
+
+EXECUTIVE SUMMARY
+-----------------
+We initiate coverage of Apex Analytics Corp (APEX) with a BUY rating and
+12-month price target of $142, implying 34% upside from current levels.
+
+KEY INVESTMENT THESIS POINTS
+
+1. AI Tailwind — Early Mover Advantage
+   Apex is among the first enterprise analytics vendors to embed generative AI
+   capabilities at the platform layer. Their AI orchestration roadmap, announced
+   at their February 2024 Investor Day, positions them to capture the estimated
+   $28B enterprise AI analytics market by 2027. The $45M committed R&D investment
+   over 18 months gives them an 18-month lead over primary competitors.
+
+2. Exceptional Unit Economics
+   Net Revenue Retention of 118% means the company grows revenue from existing
+   customers faster than churn. Dollar-based net expansion has been above 110%
+   for 11 consecutive quarters. With a blended CAC payback of 14 months, the
+   LTV:CAC ratio of approximately 8x is best-in-class for enterprise SaaS.
+
+3. Durable Revenue Growth
+   The shift from perpetual licensing to cloud subscription (ARR now $164.8M,
+   +35% YoY) dramatically improves revenue predictability. We model 22% CAGR
+   in ARR through 2026, supported by strong pipeline indicators and a TAM
+   expansion into emerging markets (APAC, LatAm).
+
+4. Operating Leverage
+   EBITDA margins expanded from 29% in 2021 to 38% in 2023, with a clear path
+   to 43%+ by 2026 as the cloud gross margin (currently 76%) scales on a fixed
+   infrastructure base. We project $130M+ in free cash flow by 2026.
+
+FINANCIAL PROJECTIONS (Meridian Estimates)
+-------------------------------------------
+               2023A    2024E    2025E    2026E
+Revenue        $185M    $224M    $271M    $325M
+YoY Growth      22%      21%      21%      20%
+EBITDA          $71M     $90M    $116M    $146M
+EBITDA Margin   38%      40%      43%      45%
+EPS             $1.24    $1.61    $2.08    $2.67
+
+RISKS TO THESIS
+---------------
+- Competitive pressure from Microsoft (Power BI) and Salesforce (Tableau)
+- Macro slowdown reducing enterprise IT spend
+- AI regulation (EU AI Act) requiring product modifications
+- Key-person dependency on CEO Caldwell and CTO Patel
+
+VALUATION
+---------
+At our $142 target, APEX trades at 16x 2025E EBITDA, a modest premium to
+software peers (median 13x) justified by above-market growth and NRR.
+
+Meridian Capital Research. For institutional clients only. See full disclosures.

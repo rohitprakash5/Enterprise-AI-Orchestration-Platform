@@ -1,0 +1,67 @@
+{
+  "revenue": {
+    "description": "Total income generated from business operations before any deductions",
+    "sql_mapping": "SELECT SUM(amount) FROM revenue",
+    "aliases": ["sales", "income", "top-line", "turnover"]
+  },
+  "expenses": {
+    "description": "Total operating costs incurred during a period, including COGS, R&D, S&M, and G&A",
+    "sql_mapping": "SELECT SUM(amount) FROM expenses",
+    "aliases": ["costs", "opex", "operating expenses", "cost base"]
+  },
+  "gross profit": {
+    "description": "Revenue minus total expenses; measures core operating profitability",
+    "sql_mapping": "SELECT SUM(total_revenue - total_expenses) FROM quarterly_results",
+    "aliases": ["net profit", "operating profit", "profit"]
+  },
+  "gross margin": {
+    "description": "Gross profit as a percentage of revenue; indicates pricing power and efficiency",
+    "sql_mapping": "SELECT AVG(gross_margin) FROM quarterly_results",
+    "aliases": ["margin", "profit margin"]
+  },
+  "ebitda": {
+    "description": "Earnings Before Interest, Taxes, Depreciation, and Amortization; a proxy for operating cash flow",
+    "sql_mapping": "SELECT SUM(ebitda) FROM quarterly_results",
+    "aliases": ["operating cash flow", "EBITDA"]
+  },
+  "yoy growth": {
+    "description": "Year-over-year percentage change in revenue compared to the same quarter in the prior year",
+    "sql_mapping": "SELECT year, quarter, AVG(yoy_growth_pct) FROM quarterly_results GROUP BY year, quarter",
+    "aliases": ["year over year", "annual growth", "YoY"]
+  },
+  "qoq growth": {
+    "description": "Quarter-over-quarter percentage change in revenue",
+    "sql_mapping": "SELECT quarter, total_revenue FROM quarterly_results ORDER BY year, quarter",
+    "aliases": ["quarter over quarter", "sequential growth", "QoQ"]
+  },
+  "run rate": {
+    "description": "Annualized projection of current quarterly performance (quarterly revenue × 4)",
+    "sql_mapping": "SELECT total_revenue * 4 AS run_rate FROM quarterly_results ORDER BY year DESC, quarter DESC LIMIT 1",
+    "aliases": ["annualized run rate", "ARR proxy"]
+  },
+  "net income": {
+    "description": "Profit after all deductions including taxes and interest; the bottom line",
+    "sql_mapping": "SELECT SUM(ebitda * 0.75) AS estimated_net_income FROM quarterly_results",
+    "aliases": ["net profit", "bottom line", "earnings"]
+  },
+  "operating leverage": {
+    "description": "Ratio of fixed to variable costs; higher leverage means more earnings sensitivity to revenue changes",
+    "sql_mapping": null,
+    "aliases": ["leverage", "cost structure"]
+  },
+  "headcount": {
+    "description": "Total number of employees; used for per-employee productivity analysis",
+    "sql_mapping": null,
+    "aliases": ["employees", "FTE", "staff count"]
+  },
+  "q4": {
+    "description": "Fourth fiscal quarter (October to December); typically the strongest revenue quarter",
+    "sql_mapping": "WHERE quarter = 4",
+    "aliases": ["fourth quarter", "Q4", "year-end quarter"]
+  },
+  "q3": {
+    "description": "Third fiscal quarter (July to September)",
+    "sql_mapping": "WHERE quarter = 3",
+    "aliases": ["third quarter", "Q3"]
+  }
+}
