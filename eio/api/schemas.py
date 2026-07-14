@@ -15,6 +15,10 @@ class QueryRequest(BaseModel):
     user_query: str = Field(..., min_length=1, max_length=4000)
     user_id: str = Field(default="anonymous")
     session_id: str = Field(default="")
+    user_confirmed: bool = Field(
+        default=False,
+        description="Set true to proceed with a best-effort answer after a multi-source fallback confirmation prompt",
+    )
 
 
 class AgentStepDTO(BaseModel):
@@ -58,6 +62,60 @@ class LineageEntryDTO(BaseModel):
     timestamp: str
 
 
+class SourceSearchResultDTO(BaseModel):
+    """One step in the multi-source fallback cascade."""
+    source_id:               str
+    source_name:             str
+    priority:                int
+    found:                   bool
+    confidence_contribution: float = 0.0
+    details:                 str = ""
+
+
+class FallbackStateDTO(BaseModel):
+    """Complete state of the multi-source fallback process."""
+    triggered:                  bool = False
+    primary_source_missing:     str = ""
+    sources_searched:           list[SourceSearchResultDTO] = Field(default_factory=list)
+    accumulated_confidence:     float = 0.0
+    requires_user_confirmation: bool = False
+    user_confirmed:             bool = False
+    best_effort_answer:         bool = False
+    confirmation_message:       str = ""
+    secondary_sources_used:     list[str] = Field(default_factory=list)
+
+
+class SourceGapRecommendationDTO(BaseModel):
+    """One actionable recommendation from the Enterprise Knowledge Advisor."""
+    source_id:           str
+    source_name:         str
+    connection_action:   str
+    priority:            str
+    business_impact:     str
+    coverage_gain_pct:   int
+    confidence_gain_pct: int
+    effort:              str
+    why_missing:         str = ""
+
+
+class ConfidenceProjectionDTO(BaseModel):
+    """How confidence changes as each missing source is added."""
+    source_name:          str
+    confidence_if_added:  int
+    delta_pct:            int
+
+
+class KnowledgeAdvisoryDTO(BaseModel):
+    """Enterprise Knowledge Advisor output — shown on every failed/partial query."""
+    query:                   str = ""
+    current_confidence_pct:  int = 0
+    blocking_sources:        list[str] = Field(default_factory=list)
+    advisory_headline:       str = ""
+    advisory_detail:         str = ""
+    recommendations:         list[SourceGapRecommendationDTO] = Field(default_factory=list)
+    confidence_projections:  list[ConfidenceProjectionDTO] = Field(default_factory=list)
+
+
 class ExplainabilityDTO(BaseModel):
     request_id: str
     agent_timeline: list[AgentStepDTO]
@@ -85,7 +143,7 @@ class ExplainabilityDTO(BaseModel):
     planner_skills: list[str] = Field(default_factory=list)
     planner_tools: list[str] = Field(default_factory=list)
     planner_execution_strategy: str = ""
-    # Doc2 new fields
+    # Doc2 fields
     query_category: str = ""
     is_feasible: bool = True
     feasibility_reason: str = ""
@@ -104,6 +162,11 @@ class ExplainabilityDTO(BaseModel):
     data_acquisition_recs: list[str] = Field(default_factory=list)
     failure_category: str = ""
     knowledge_coverage: dict[str, Any] = Field(default_factory=dict)
+    # Multi-source fallback + Knowledge Advisor (new)
+    fallback_state: FallbackStateDTO | None = None
+    knowledge_advisory: KnowledgeAdvisoryDTO | None = None
+    source_priorities: list[dict[str, Any]] = Field(default_factory=list)
+    confidence_projections: list[ConfidenceProjectionDTO] = Field(default_factory=list)
     llm_call_count: int = 0
     db_call_count: int = 0
     doc_retrieval_count: int = 0

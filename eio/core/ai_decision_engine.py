@@ -197,7 +197,14 @@ class AIDecisionEngine:
         result.estimated_cost_usd = tokens_to_cost("gpt-4o", context.estimated_tokens)
 
         # Build + score candidates
+        # When a specific provider is active, restrict candidates to that provider
+        # so the active provider always wins the scoring competition.
+        import os
+        active_llm = os.getenv("EIO_ACTIVE_LLM", "").lower()
         all_profiles = ModelCapabilityRegistry.all()
+        if active_llm == "ica":
+            # Only score ICA agents — never let OpenAI/Anthropic candidates win
+            all_profiles = [p for p in all_profiles if p.provider == "ica"]
         if not all_profiles:
             # Registry not populated yet — fall back to simple routing
             return self._simple_fallback(context, result)
@@ -214,7 +221,23 @@ class AIDecisionEngine:
         if not eligible:
             eligible = scored  # all disqualified → pick best anyway
 
-        winner = max(eligible, key=lambda c: c.total_score)
+        # When ICA is active, use the task-aware router to pick the right agent
+        # instead of pure cost-score competition (which would always pick the
+        # cheapest Granite-based agent regardless of task fit).
+        if active_llm == "ica":
+            from eio.connectors.llm.router import ModelRouter
+            task_router = ModelRouter()
+            task_decision = task_router._select_ica_agent(context)
+            task_model_id = task_decision[0]
+            # Find the matching candidate; fall back to score winner if not found
+            task_winner = next(
+                (c for c in eligible if c.profile.model_id == task_model_id),
+                max(eligible, key=lambda c: c.total_score),
+            )
+            winner = task_winner
+        else:
+            winner = max(eligible, key=lambda c: c.total_score)
+
         result.selected_model_id    = winner.profile.model_id
         result.selected_provider    = winner.profile.provider
         result.selected_display_name = winner.profile.display_name
@@ -260,7 +283,10 @@ class AIDecisionEngine:
             cs.disqualify_reason = f"Model offline: {health.last_error_msg}"
             return cs
 
-        if context.sql_needed and not profile.sql_generation:
+        # ICA agents don't advertise sql_generation=True because they are
+        # orchestrated agents — the underlying base model handles SQL.
+        # Never disqualify ICA agents on capability flags.
+        if context.sql_needed and not profile.sql_generation and profile.provider != "ica":
             cs.disqualified = True
             cs.disqualify_reason = "SQL generation required but not supported"
             return cs
@@ -274,8 +300,12 @@ class AIDecisionEngine:
             return cs
 
         # Compute dimension scores
-        cs.reasoning_score = profile.reasoning_score
-        cs.sql_score       = profile.sql_score if context.sql_needed else 1.0
+        # ICA agents inherit the SQL/reasoning capability of their base model.
+        # Treat them as equivalent to gpt-4o tier (score 0.95) so they are
+        # competitive when sql_needed or rag_needed.
+        ica_boost = profile.provider == "ica"
+        cs.reasoning_score = profile.reasoning_score if not ica_boost else max(profile.reasoning_score, 0.88)
+        cs.sql_score       = (profile.sql_score if not ica_boost else 0.90) if context.sql_needed else 1.0
         cs.context_score   = 1.0 if profile.long_context else 0.5
 
         cs.governance_score = 1.0 if profile.governance_approved else 0.0
@@ -396,14 +426,24 @@ class AIDecisionEngine:
 
     @staticmethod
     def _simple_fallback(context: RoutingContext, result: AIDecisionResult) -> AIDecisionResult:
-        """Fallback when registry is empty."""
-        result.selected_model_id = "gpt-4o"
-        result.selected_provider = "openai"
-        result.selected_display_name = "GPT-4o (fallback)"
-        result.selection_reason = "Capability registry empty — default to GPT-4o"
+        """Fallback when registry is empty — respect active provider from env."""
+        import os
+        active = os.getenv("EIO_ACTIVE_LLM", "openai").lower()
+        if active == "ica":
+            from eio.connectors.llm.router import _ICA_AGENT_RESEARCH
+            result.selected_model_id = _ICA_AGENT_RESEARCH
+            result.selected_provider = "ica"
+            result.selected_display_name = "ICA: Internet Researcher (fallback)"
+            result.selection_reason = "Capability registry empty — default to active ICA provider"
+        else:
+            result.selected_model_id = "gpt-4o"
+            result.selected_provider = "openai"
+            result.selected_display_name = "GPT-4o (fallback)"
+            result.selection_reason = "Capability registry empty — default to GPT-4o"
         result.selection_confidence = 50.0
         result.routing_decision = RoutingDecision(
-            provider="openai", model="gpt-4o",
+            provider=result.selected_provider,
+            model=result.selected_model_id,
             reason=result.selection_reason,
             estimated_cost_usd=0.01,
             estimated_tokens=context.estimated_tokens,

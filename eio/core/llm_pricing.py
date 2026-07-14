@@ -20,12 +20,23 @@ LLM_PRICING: dict[str, dict[str, float]] = {
     "claude-3-5-sonnet":   {"input": 0.003,   "output": 0.015},
     "claude-3-haiku":      {"input": 0.00025, "output": 0.00125},
     "claude-3-opus":       {"input": 0.015,   "output": 0.075},
+    # Anthropic newer (used by ICA agents)
+    "claude-sonnet-3-7":   {"input": 0.003,   "output": 0.015},
+    "claude-sonnet-4-5":   {"input": 0.003,   "output": 0.015},
+    "claude-sonnet-4-6":   {"input": 0.003,   "output": 0.015},
     # IBM Granite
     "granite-13b-chat":    {"input": 0.0003,  "output": 0.0006},
     "granite-34b-code":    {"input": 0.0006,  "output": 0.0012},
+    "ibm/granite-4-h-small": {"input": 0.0002, "output": 0.0004},
     # Gemini
     "gemini-1.5-pro":      {"input": 0.0035,  "output": 0.0105},
     "gemini-1.5-flash":    {"input": 0.00035, "output": 0.00105},
+    "gemini-2.5-flash":    {"input": 0.00015, "output": 0.0006},
+    "gemini-3.1-pro-preview": {"input": 0.0035, "output": 0.0105},
+    # Meta Llama (used by ICA agents)
+    "meta-llama/llama-4-maverick-17b-128e-instruct-fp8": {"input": 0.00027, "output": 0.00085},
+    # ICA internal model (gpt-5.1-chat-gus — treated as GPT-4o tier)
+    "gpt-5.1-chat-gus":    {"input": 0.005,   "output": 0.015},
     # Ollama (local — no cost)
     "llama3":              {"input": 0.0,     "output": 0.0},
     "llama3:8b":           {"input": 0.0,     "output": 0.0},

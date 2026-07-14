@@ -27,6 +27,8 @@ from eio.connectors.llm.router import ModelRouter
 from eio.connectors.storage.base import StorageConnector
 from eio.core.ai_decision_engine import AIDecisionEngine
 from eio.core.explainability.trace import AgentStep, ExplainabilityTrace
+from eio.core.knowledge_advisor import EnterpriseKnowledgeAdvisor
+from eio.core.multi_source_fallback import MultiSourceFallbackEngine, CONFIDENCE_PROCEED
 from eio.core.model_capability_registry import (
     ModelCapabilityRegistry,
     register_default_profiles,
@@ -104,6 +106,7 @@ class Orchestrator:
         user_id: str = "anonymous",
         session_id: str = "",
         user_context: UserContext | None = None,
+        user_confirmed: bool = False,
     ) -> AgentContext:
         """Execute the full multi-agent pipeline. Returns populated AgentContext."""
         request_id = str(uuid.uuid4())
@@ -145,37 +148,47 @@ class Orchestrator:
             )
             context.selected_agents = list(_FULL_PIPELINE_ORDER[1:])
 
-        # ── Doc2 #2/#4/#9: Infeasibility early-exit ──────────────────────
+        # ── Doc2 #2/#4/#9: Infeasibility — run Knowledge Advisor ─────────
         if not context.trace.is_feasible:
-            category  = context.trace.query_category
-            missing   = context.trace.missing_evidence
-            recs      = context.trace.recommendations
-            acq_recs  = context.trace.data_acquisition_recs
-            conn_sugg = context.trace.connector_suggestions
+            # Still run AI Decision Engine so the sidebar is never blank
+            self._timeline_step(context, "AI Decision Engine", "Evaluating candidate models (infeasible path)")
+            try:
+                decision_engine = AIDecisionEngine(
+                    max_cost_usd=float(os.getenv("EIO_POLICY_COST_LIMIT_USD", "0.50")),
+                    max_tokens=int(os.getenv("EIO_POLICY_TOKEN_BUDGET", "16000")),
+                )
+                ai_decision = decision_engine.evaluate(context.routing_context)
+                context.routing_decision = ai_decision.routing_decision
+                context.trace.ai_decision = ai_decision.to_dict()
+                context.trace.routing_decision = (
+                    ai_decision.routing_decision.model_dump()
+                    if ai_decision.routing_decision else None
+                )
+            except Exception as _exc:
+                logger.warning(f"AI Decision Engine skipped on infeasible path: {_exc}")
+                # Populate a minimal routing_decision from the active provider
+                context.trace.routing_decision = {
+                    "provider": self._llm.provider_name,
+                    "model":    self._llm.default_model,
+                    "reason":   "Infeasible query — active provider shown",
+                    "estimated_cost_usd": 0.0,
+                    "complexity": "low",
+                    "policy_applied": [],
+                }
 
-            # Build a rich, actionable "cannot answer" response
-            parts = [
-                f"**Query Assessment: {category.replace('_', ' ').title()}**\n",
-                f"{context.trace.feasibility_reason}\n",
-            ]
-            if missing:
-                parts.append("**Missing Information:**")
-                for m in missing:
-                    parts.append(f"  • {m}")
-            if recs:
-                parts.append("\n**Recommended Next Steps:**")
-                for r in recs:
-                    parts.append(f"  ✓ {r}")
-            if acq_recs:
-                parts.append("\n**Data Acquisition Recommendations:**")
-                for a in acq_recs:
-                    parts.append(f"  → {a}")
-            if conn_sugg:
-                parts.append("\n**Suggested Enterprise Connectors:**")
-                for c in conn_sugg:
-                    parts.append(f"  🔌 **{c['name']}** ({c['type']}) — {c['use_case']}")
-
-            context.final_answer = "\n".join(parts)
+            advisor = EnterpriseKnowledgeAdvisor()
+            available_docs = self._get_available_docs(context)
+            has_sql = bool(context.sql_result and context.sql_result.success
+                           and context.sql_result.row_count > 0)
+            advisory = advisor.advise(
+                query=user_query,
+                missing_evidence=context.trace.missing_evidence,
+                current_confidence=0.10,
+                available_docs=available_docs,
+                has_sql_data=has_sql,
+            )
+            context.trace.knowledge_advisory = advisory.to_dict()
+            context.final_answer = advisory.format_as_text()
             context.trace.finalize(context.total_tokens, context.total_cost_usd)
             return context
 
@@ -302,7 +315,12 @@ class Orchestrator:
                     success=bool(context.final_answer),
                 )
 
-        # ── Step 7: Post-synthesis PII scan ─────────────────────────────
+        # ── Step 7: Multi-source fallback evaluation ─────────────────────
+        # Run after all agents complete — assess evidence quality and trigger
+        # fallback/confirmation if primary sources were missing.
+        self._run_fallback_evaluation(context, user_query, user_confirmed=user_confirmed)
+
+        # ── Step 7b: Post-synthesis PII scan ────────────────────────────
         if context.final_answer:
             self._timeline_step(context, "Policy Engine (PII)", "Post-synthesis PII scan")
             pii_result = self._policy.check_pii(context.final_answer)
@@ -419,6 +437,103 @@ class Orchestrator:
                 "Keycloak",
             ],
         }
+
+    def _run_fallback_evaluation(
+        self,
+        context: AgentContext,
+        user_query: str,
+        user_confirmed: bool = False,
+    ) -> None:
+        """
+        Evaluate multi-source fallback after the agent pipeline completes.
+        If the primary source was unavailable but secondary sources provide
+        enough confidence, generate a best-effort answer or a user confirmation prompt.
+        """
+        if not context.trace.source_priorities:
+            return  # planner didn't produce source priorities — skip
+
+        available_docs = self._get_available_docs(context)
+        has_sql = bool(
+            context.sql_result and context.sql_result.success
+            and context.sql_result.row_count > 0
+        )
+
+        fallback_engine = MultiSourceFallbackEngine()
+        fallback = fallback_engine.evaluate(
+            query=user_query,
+            available_docs=available_docs,
+            has_sql_data=has_sql,
+            source_priorities=context.trace.source_priorities,
+            user_confirmed=user_confirmed,
+        )
+        context.trace.fallback_state = fallback.to_dict()
+
+        if not fallback.triggered:
+            return  # primary source was available — nothing to do
+
+        self._timeline_step(
+            context, "Multi-Source Fallback",
+            f"Primary source '{fallback.primary_source_missing}' unavailable — "
+            f"cascaded through {len(fallback.sources_searched)} secondary sources"
+        )
+
+        # Always attach the Knowledge Advisor when fallback triggers
+        advisor = EnterpriseKnowledgeAdvisor()
+        advisory = advisor.advise(
+            query=user_query,
+            missing_evidence=[fallback.primary_source_missing] + context.trace.missing_evidence,
+            current_confidence=fallback.accumulated_confidence,
+            available_docs=available_docs,
+            has_sql_data=has_sql,
+        )
+        context.trace.knowledge_advisory = advisory.to_dict()
+
+        if fallback.requires_user_confirmation:
+            # Inject a structured confirmation prompt into the answer
+            # The API caller must re-submit with user_confirmed=True to proceed.
+            context.trace.failure_category = "partial_evidence"
+            confirmation_block = (
+                "\n\n---\n"
+                "## Multi-Source Fallback\n\n"
+                f"{fallback.confirmation_message}\n\n"
+                "**Secondary sources available:**\n"
+                + "\n".join(f"  ✓ {s}" for s in fallback.secondary_sources_used)
+                + f"\n\n**Confidence:** {round(fallback.accumulated_confidence * 100)}%\n"
+                "**Proceed?** Re-submit with `user_confirmed=true` to generate a best-effort answer."
+            )
+            if context.final_answer:
+                context.final_answer += confirmation_block
+            else:
+                context.final_answer = (
+                    f"Primary evidence unavailable: **{fallback.primary_source_missing}**.\n"
+                    + confirmation_block
+                )
+        elif fallback.best_effort_answer and fallback.secondary_sources_used:
+            # Enough secondary evidence — annotate the answer
+            if context.final_answer:
+                annotation = (
+                    f"\n\n> **Note:** This answer was generated using secondary sources "
+                    f"({', '.join(fallback.secondary_sources_used)}) because the primary source "
+                    f"({fallback.primary_source_missing}) was unavailable. "
+                    f"Confidence: {round(fallback.accumulated_confidence * 100)}%."
+                )
+                context.final_answer += annotation
+            context.trace.failure_category = "partial_evidence"
+
+    @staticmethod
+    def _get_available_docs(context: AgentContext) -> list[str]:
+        """Return list of document filenames from storage connector."""
+        try:
+            files = context.storage_connector.list_files()
+            if files and hasattr(files[0], "name"):
+                return [f.name for f in files]
+            if files and isinstance(files[0], str):
+                import os
+                return [os.path.basename(f) for f in files]
+        except Exception:
+            pass
+        # Fallback: use already-retrieved docs from context
+        return list(context.retrieved_documents)
 
     @staticmethod
     def _build_evidence_sources(context: AgentContext) -> list[str]:

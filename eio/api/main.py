@@ -104,7 +104,8 @@ async def _startup(app: FastAPI) -> None:
     else:
         llm_provider = LLMRegistry.get(active_llm)
 
-    logger.info(f"LLM provider: {active_llm} | health: {llm_provider.health_check().get('mode','?')}")
+    hc = llm_provider.health_check()
+    logger.info(f"LLM provider: {active_llm} | status: {hc.get('status', hc.get('mode', '?'))}")
 
     # ── 5. Initialize ChromaDB ──────────────────────────────────────────
     chroma_path = os.getenv("EIO_CHROMA_PATH", "eio/data/chroma")

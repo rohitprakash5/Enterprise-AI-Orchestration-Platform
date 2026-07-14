@@ -165,8 +165,25 @@ def _render_header() -> None:
 
 # ── Connector status bar ─────────────────────────────────────────────────────
 
+@st.cache_data(ttl=30, show_spinner=False)
+def _fetch_config() -> dict:
+    return _safe_get(CONFIG_EP) or {}
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _fetch_health() -> dict:
+    return _safe_get(HEALTH_EP) or {}
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _fetch_models() -> dict:
+    return _safe_get(MODELS_EP) or {}
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _fetch_model_health() -> dict:
+    return _safe_get(MHEALTH_EP) or {}
+
+
 def _render_connector_status() -> None:
-    cfg = _safe_get(CONFIG_EP) or {}
+    cfg = _fetch_config()
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric("LLM Provider",    cfg.get("active_llm",     "—").upper())
     c2.metric("Database",        cfg.get("active_db",      "—").upper())
@@ -202,7 +219,7 @@ def _render_welcome() -> None:
 
 
 def _render_capability_registry_preview() -> None:
-    models_data = _safe_get(MODELS_EP) or {}
+    models_data = _fetch_models()
     profiles = models_data.get("profiles", [])
     if not profiles:
         return
@@ -308,11 +325,11 @@ def _render_response_panel(resp: dict) -> None:
     st.markdown(resp.get("answer", "_No answer generated._"))
 
     # ── KPI row ─────────────────────────────────────────────────────────────
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
     conf    = resp.get("confidence_score", 0)
     r_score = expl.get("readiness_score", 1.0)
     r_label = expl.get("readiness_label", "")
     ai = expl.get("ai_decision") or {}
+    rd = expl.get("routing_decision") or {}
     actual_cost = resp.get("total_cost_usd", 0)
     estimated_cost = ai.get("selected_estimated_cost_usd", actual_cost)
     baseline_cost = ai.get("highest_estimated_cost_usd", estimated_cost)
@@ -328,14 +345,49 @@ def _render_response_panel(resp: dict) -> None:
     agents_label = ", ".join(agent_names[:4])
     if len(agent_names) > 4:
         agents_label += ", ..."
+
+    # ── LLM Used banner (full-width, always readable) ────────────────────
+    _llm_provider = rd.get("provider", "").upper() or "—"
+    _llm_model = ai.get("selected_display_name") or rd.get("model", "") or "—"
+    # Pull base-model hint from the winner's notes field (already in API response — no eio import needed)
+    _llm_base_model = ""
+    _winner_id = ai.get("selected_model_id", "")
+    for _cand in ai.get("candidates_evaluated", []):
+        if _cand.get("model_id") == _winner_id:
+            _notes = _cand.get("notes", "")
+            # notes format: "ICA agent: <name>. Base: <base_model>"
+            if "Base:" in _notes:
+                _llm_base_model = " · base: " + _notes.split("Base:")[-1].strip()
+            break
+
+    st.markdown(
+        f'<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;'
+        f'padding:10px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px">'
+        f'<span style="font-size:0.7rem;color:#57606a;text-transform:uppercase;'
+        f'letter-spacing:.05em;white-space:nowrap">LLM Used</span>'
+        f'<span style="font-size:1rem;font-weight:700;color:#1e40af;white-space:nowrap">'
+        f'{_llm_provider}</span>'
+        f'<span style="font-size:0.85rem;color:#1f2328;word-break:break-word">'
+        f'{_llm_model}</span>'
+        f'<span style="font-size:0.75rem;color:#57606a;margin-left:auto;white-space:nowrap">'
+        f'{_llm_base_model}</span>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # ── 5-metric KPI row (no truncation) ─────────────────────────────────
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Confidence", f"{conf:.0%}")
-    c1.progress(conf)
+    c1.progress(min(max(conf, 0.0), 1.0))
     c2.metric("Readiness", f"{r_score:.0%}", help=r_label)
-    c2.progress(r_score)
+    c2.progress(min(max(r_score, 0.0), 1.0))
     c3.metric("Latency", f"{resp.get('total_latency_ms', 0):.0f} ms")
     c4.metric("Tokens", f"{resp.get('total_tokens', 0):,}")
-    c5.metric("Cost", f"Est. ${estimated_cost:.3f}", help=f"Actual: ${actual_cost:.3f} | Savings: {savings:.0%}")
-    c6.metric("Agents Run", f"{len(agent_names)} Agents", help=agents_label or None)
+    c5.metric("Cost", f"${estimated_cost:.4f}",
+              help=f"Estimated: ${estimated_cost:.4f} | Actual: ${actual_cost:.4f} | Savings vs worst: {savings:.0%}")
+    # Agents count shown inline in the LLM banner row replaced by a caption
+    if agent_names:
+        st.caption(f"🤖 Agents: {agents_label}  ·  Total actual cost ${actual_cost:.5f}")
 
     # ── Knowledge Coverage Score (Signature) ──────────────────────────────────
     _render_knowledge_coverage(expl)
@@ -516,7 +568,7 @@ def _render_readiness_score(expl: dict) -> None:
         c1, c2 = st.columns(2)
         clr = "#276749" if r_score >= 0.85 else ("#d97706" if r_score >= 0.50 else "#c53030")
         c1.markdown(f"**Score:** <span style='color:{clr};font-size:1.2rem;font-weight:700'>{r_score:.0%}</span>", unsafe_allow_html=True)
-        c1.progress(r_score)
+        c1.progress(min(max(r_score, 0.0), 1.0))
         c1.markdown(f"**Status:** `{r_label}`")
 
         if failure_cat and failure_cat != "none":
@@ -732,7 +784,7 @@ def _render_evidence_summary(expl: dict) -> None:
         if model_name:
             c1.markdown(f"**Reasoning Model**\n\n`{model_name}`")
         c2.markdown("**Confidence Score**")
-        c2.progress(conf, text=f"{conf:.0%}")
+        c2.progress(min(max(conf, 0.0), 1.0), text=f"{conf:.0%}")
 
         if breakdown:
             st.markdown("**Confidence Breakdown**")
@@ -846,7 +898,7 @@ def _render_sidebar() -> None:
 
 def _sidebar_registry_preview() -> None:
     """Show model health registry in sidebar before first query."""
-    health_data = _safe_get(MHEALTH_EP) or {}
+    health_data = _fetch_model_health()
     entries = health_data.get("entries", [])
     if not entries:
         return
@@ -863,8 +915,8 @@ def _sidebar_registry_preview() -> None:
 
 def _render_platform_info() -> None:
     st.markdown("**🏗️ Platform**")
-    cfg = _safe_get(CONFIG_EP) or {}
-    h   = _safe_get(HEALTH_EP) or {}
+    cfg = _fetch_config()
+    h   = _fetch_health()
     conns = h.get("connectors", {})
     for name, status in conns.items():
         s  = status.get("status", "?")
@@ -958,7 +1010,7 @@ def _sidebar_planner(expl: dict) -> None:
     st.markdown("---")
     clr = "#276749" if r_score >= 0.85 else ("#d97706" if r_score >= 0.50 else "#c53030")
     st.markdown(f"**Enterprise Readiness:** <span style='color:{clr};font-weight:700'>{r_score:.0%} — {r_label}</span>", unsafe_allow_html=True)
-    st.progress(r_score)
+    st.progress(min(max(r_score, 0.0), 1.0))
 
     # Planner full reasoning
     if reasoning:
@@ -1023,7 +1075,7 @@ def _sidebar_ai_engine(expl: dict) -> None:
     sc   = ai.get("selection_confidence", 0)
     reason = ai.get("selection_reason", "")
     st.markdown(f"**🏆 Selected Model:** `{sel}`")
-    st.progress(min(sc / 100, 1.0), text=f"Confidence: {sc:.1f}/100")
+    st.progress(min(max(sc / 100, 0.0), 1.0), text=f"Confidence: {sc:.1f}/100")
     if reason:
         st.caption(reason[:200])
 
@@ -1050,7 +1102,7 @@ def _sidebar_ai_engine(expl: dict) -> None:
                 name_col, score_col = st.columns([3, 1])
                 name_col.markdown(f"**{prefix}{c.get('display_name', '')}**")
                 score_col.markdown(f"`{c.get('total_score', 0):.1f}`")
-                st.progress(c.get("total_score", 0) / 100)
+                st.progress(min(max(c.get("total_score", 0) / 100, 0.0), 1.0))
                 # 7 dimension mini-bars
                 dm_cols = st.columns(7)
                 dims = [
@@ -1084,7 +1136,7 @@ def _sidebar_ai_engine(expl: dict) -> None:
     # ── Enhancement #3: Model Capability Registry ─────────────────────────────
     st.markdown("---")
     st.markdown("**📋 Model Capability Registry** *(Enhancement #3)*")
-    models_data = _safe_get(MODELS_EP) or {}
+    models_data = _fetch_models()
     profiles    = models_data.get("profiles", [])
     if profiles:
         for p in profiles[:4]:
@@ -1098,7 +1150,7 @@ def _sidebar_ai_engine(expl: dict) -> None:
     # ── Enhancement #4: Model Health Registry ─────────────────────────────────
     st.markdown("---")
     st.markdown("**💓 Model Health Registry** *(Enhancement #4)*")
-    health_data = _safe_get(MHEALTH_EP) or {}
+    health_data = _fetch_model_health()
     entries     = health_data.get("entries", [])
     if entries:
         for e in entries:
@@ -1248,7 +1300,7 @@ def _sidebar_timeline(expl: dict) -> None:
         st.markdown("---")
         st.markdown("**Data Quality**")
         qs = dq.get("quality_score", 1.0)
-        st.progress(qs, text=f"Quality Score: {qs:.0%}")
+        st.progress(min(max(qs, 0.0), 1.0), text=f"Quality Score: {qs:.0%}")
         for flag in dq.get("anomaly_flags", []):
             st.caption(f"⚠️ {flag}")
 

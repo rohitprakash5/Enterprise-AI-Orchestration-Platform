@@ -12,14 +12,19 @@ from fastapi import APIRouter, HTTPException, Request
 
 from eio.api.schemas import (
     AgentStepDTO,
+    ConfidenceProjectionDTO,
     DataQualityDTO,
     DataResultDTO,
     ExplainabilityDTO,
+    FallbackStateDTO,
+    KnowledgeAdvisoryDTO,
     LineageEntryDTO,
     QueryRequest,
     QueryResponse,
     RAGPassageDTO,
     RoutingDecisionDTO,
+    SourceGapRecommendationDTO,
+    SourceSearchResultDTO,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,6 +44,7 @@ async def run_query(request: Request, body: QueryRequest) -> QueryResponse:
             user_query=body.user_query,
             user_id=body.user_id,
             session_id=body.session_id,
+            user_confirmed=body.user_confirmed,
         )
     except Exception as exc:
         logger.error(f"Orchestrator error: {exc}", exc_info=True)
@@ -183,6 +189,32 @@ async def run_query(request: Request, body: QueryRequest) -> QueryResponse:
         data_acquisition_recs=trace.data_acquisition_recs,
         failure_category=trace.failure_category,
         knowledge_coverage=trace.knowledge_coverage,
+
+        # Multi-source fallback (new)
+        fallback_state=FallbackStateDTO(**trace.fallback_state) if trace.fallback_state else None,
+
+        # Knowledge Advisor (new)
+        knowledge_advisory=KnowledgeAdvisoryDTO(
+            query=trace.knowledge_advisory.get("query", ""),
+            current_confidence_pct=trace.knowledge_advisory.get("current_confidence_pct", 0),
+            blocking_sources=trace.knowledge_advisory.get("blocking_sources", []),
+            advisory_headline=trace.knowledge_advisory.get("advisory_headline", ""),
+            advisory_detail=trace.knowledge_advisory.get("advisory_detail", ""),
+            recommendations=[
+                SourceGapRecommendationDTO(**r)
+                for r in trace.knowledge_advisory.get("recommendations", [])
+            ],
+            confidence_projections=[
+                ConfidenceProjectionDTO(**p)
+                for p in trace.knowledge_advisory.get("confidence_projections", [])
+            ],
+        ) if trace.knowledge_advisory else None,
+
+        # Source priorities + confidence projections (new)
+        source_priorities=trace.source_priorities,
+        confidence_projections=[
+            ConfidenceProjectionDTO(**p) for p in trace.confidence_projections
+        ],
 
         # Observability counters (Enhancement #14)
         llm_call_count=trace.llm_call_count,

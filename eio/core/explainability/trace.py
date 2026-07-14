@@ -136,6 +136,27 @@ class ExplainabilityTrace(BaseModel):
     knowledge_coverage: dict[str, Any] = Field(default_factory=dict)
     # {sources: [{name, available, icon}], overall_pct: 41, recommendation: "..."}
 
+    # ── Multi-Source Fallback ─────────────────────────────────────────────────
+    # Populated by the Orchestrator's fallback engine when primary sources are missing
+    fallback_state: dict[str, Any] = Field(default_factory=dict)
+    # {triggered, primary_source_missing, sources_searched, accumulated_confidence,
+    #  requires_user_confirmation, confirmation_message, secondary_sources_used}
+
+    # ── Enterprise Knowledge Advisor ─────────────────────────────────────────
+    # Populated after every infeasible or low-confidence query
+    knowledge_advisory: dict[str, Any] = Field(default_factory=dict)
+    # {blocking_sources, recommendations, advisory_headline, advisory_detail}
+
+    # ── Source Priority List (from Planner) ──────────────────────────────────
+    # Ordered list of evidence sources the planner recommends searching
+    source_priorities: list[dict[str, Any]] = Field(default_factory=list)
+    # [{id, name, priority, weight, doc_patterns, connector}]
+
+    # ── Confidence Improvement Projections (signature feature) ───────────────
+    # Shows exactly how much each missing source would improve answer quality
+    confidence_projections: list[dict[str, Any]] = Field(default_factory=list)
+    # [{source_name, confidence_if_added, delta_pct}]
+
     # SQL
     sql_generated: str | None = None
     sql_validated: bool = False

@@ -297,6 +297,12 @@ python eio/data/demo/generate_annual_report.py
 uvicorn eio.api.main:app --reload --port 8000
 streamlit run eio/ui/app.py
 
+uvicorn eio.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+https://nextgen-beta.ica.ibm.com/ica/settings/apikey
+
+http://localhost:8501/
+http://localhost:8000/docs
 
 ################
 Future State

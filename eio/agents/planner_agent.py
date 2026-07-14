@@ -113,7 +113,17 @@ Return ONLY valid JSON with this exact structure:
   "data_acquisition_recs": ["Connect HR database", "Upload annual reports"],
   "failure_category": "none|no_data|insufficient_data|connector_offline|permission_denied",
   "planner_reasoning": "full explanation of the execution strategy and why",
-  "estimated_cost_explanation": "why this complexity/cost level was chosen"
+  "estimated_cost_explanation": "why this complexity/cost level was chosen",
+  "source_priorities": [
+    {{"id": "annual_report",   "name": "Annual Report",   "priority": 1, "weight": 0.30, "doc_patterns": ["annual", "annual_report"], "connector": null}},
+    {{"id": "analyst_report",  "name": "Analyst Report",  "priority": 2, "weight": 0.40, "doc_patterns": ["analyst", "research"],     "connector": null}},
+    {{"id": "financial_database", "name": "Financial Database", "priority": 3, "weight": 0.35, "doc_patterns": [], "connector": "database"}}
+  ],
+  "confidence_projections": [
+    {{"source_name": "Annual Report",  "confidence_if_added": 72, "delta_pct": 62}},
+    {{"source_name": "Analyst Report", "confidence_if_added": 95, "delta_pct": 23}},
+    {{"source_name": "SharePoint",     "confidence_if_added": 98, "delta_pct": 3}}
+  ]
 }}
 
 Query classification guidelines:
@@ -132,6 +142,11 @@ IMPORTANT for insufficient_data:
   AND the question asks about something NOT in those tables/documents (e.g. employee count,
   headcount, HR data, sales pipeline, IT tickets), classify as "insufficient_data", set
   is_feasible=false, and populate missing_evidence and recommendations.
+
+For source_priorities: list the evidence sources in the order they should be searched,
+most authoritative first. Assign realistic weights (0.0–1.0) based on how much each source
+contributes to answering this specific query. For confidence_projections: show what the
+answer confidence would be if each source were added, starting from the current baseline.
 
 Always include "response_synthesis" as the last agent ONLY if is_feasible=true.
 For insufficient_data queries: selected_agents should be ["metadata_discovery"] only.
@@ -228,6 +243,17 @@ class PlannerAgent(BaseAgent):
             t.knowledge_coverage = self._build_knowledge_coverage(
                 context.user_query, db_tables, doc_list
             )
+
+            # ── Source priorities (new: fallback engine input) ────────────
+            t.source_priorities = plan.get("source_priorities", [])
+
+            # ── Confidence projections (new: signature feature) ───────────
+            t.confidence_projections = plan.get("confidence_projections", [])
+            if not t.confidence_projections:
+                # Build fallback projections from knowledge_advisor defaults
+                t.confidence_projections = self._build_fallback_projections(
+                    plan.get("missing_evidence", [])
+                )
 
             # ── Skipped stages (Doc2 #11) ─────────────────────────────────
             t.skipped_stages = self._compute_skipped_stages(plan, context.selected_agents)
@@ -450,6 +476,23 @@ class PlannerAgent(BaseAgent):
                     reason = default_reason
                 skipped.append({"stage": stage, "reason": reason})
         return skipped
+
+    @staticmethod
+    def _build_fallback_projections(missing_evidence: list[str]) -> list[dict]:
+        """
+        Generate confidence improvement projections when the LLM didn't produce them.
+        Uses the KnowledgeAdvisor catalogue as a fallback data source.
+        """
+        from eio.core.knowledge_advisor import EnterpriseKnowledgeAdvisor
+        advisor = EnterpriseKnowledgeAdvisor()
+        report = advisor.advise(
+            query=" ".join(missing_evidence),
+            missing_evidence=missing_evidence,
+            current_confidence=0.10,
+            available_docs=[],
+            has_sql_data=False,
+        )
+        return [p.to_dict() for p in report.confidence_projections]
 
     @staticmethod
     def _parse_plan(content: str) -> dict:
